@@ -3,9 +3,10 @@ import scapy.all as scapy
 import netfilterqueue
 import user_input
 
-ip = user_input.enter_ip()
-block = user_input.ban_ip()
-tcp_port = user_input.ban_tcp()
+ip = "192.168.2.129"
+block = "10.0.2.1"
+tcp_port = [22]
+udp_port = [22]
 def firewall(pkt):
     #print(pkt)
     sca = scapy.IP(pkt.get_payload())
@@ -15,6 +16,7 @@ def firewall(pkt):
             pkt.drop()
             return
         else:
+            
             pkt.accept()
             return
     
@@ -24,7 +26,21 @@ def firewall(pkt):
         return 
    
     if sca.haslayer(scapy.TCP):
-        print(sca.show()) 
+        if sca[scapy.TCP].dport in tcp_port:
+            port = sca[scapy.TCP].dport
+            ip_add = sca.src
+            print("port "+str(port)+" accessed by "+str(ip_add))
+            pkt.drop()
+            return
+
+    if sca.haslayer(scapy.UDP):
+        if sca[scapy.UDP].dport in udp_port:
+            port = sca[scapy.UDP].dport
+            ip_add = sca.src
+            print("port "+str(port)+" accessed by "+str(ip_add))
+            pkt.drop()
+            return 
+
     #print(sca.show())  
     pkt.accept()
 
